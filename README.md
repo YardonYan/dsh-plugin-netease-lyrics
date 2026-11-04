@@ -61,7 +61,7 @@ dsh plugin --profile web add "<路径>/dsh-plugin-netease-lyrics" --save-exact
 1. 打开桌面网易云放一首歌
 2. 在 DSH 里随便发一条消息让 AI 转起来
 3. 「深度求索中」状态行右边会出现同样式的歌词，跟着演唱进度换行
-4. 鼠标悬停歌词可看完整句和翻译（如果有）
+4. 鼠标悬停歌词可看完整句和翻译（如果有）；浮层不拦截点击，下方控件照常可用
 
 ## 必读：注意事项与已知限制
 
@@ -86,6 +86,14 @@ dsh plugin --profile web add "<路径>/dsh-plugin-netease-lyrics" --save-exact
       anchorText: "深度求索中，用时"   # 换成你的宿主状态行文案（英文界面等）
 ```
 
+关于 `anchorText` 的三点：
+
+- 只认这一个键，值的用途是在页面里定位宿主状态行，不是替换歌词内容
+- 未配置、配置成非字符串或空字符串时，回退到内置默认值 `深度求索中，用时`
+- 客户端在加载时读取该值，改完要刷新页面；改动 `index.js` 才需要重启 `dsh web`
+
+文案本身要选状态行里稳定出现的一小段。太短容易误匹配聊天正文，太长在状态行拆分文本节点时会匹配不到。
+
 ## 隐私与安全
 
 - 插件不读取网易云账号、Cookie 或任何客户端数据，只读 Windows 系统媒体会话的公开快照（歌名/歌手/状态）
@@ -99,10 +107,16 @@ dsh-plugin-netease-lyrics/
 ├── package.json          # 插件清单（dsh.bundle.patch + dsh.client）
 ├── cordis.patch.yml      # Loader 补丁
 ├── index.js              # Host 端：SMTC worker 监管 + 歌词代理路由
-├── client.js             # 浏览器端：锚点定位 + 歌词渲染
+├── client.js             # 浏览器端：锚点定位 + 歌词渲染 + 悬停浮层
 ├── smtc-worker.ps1       # Windows SMTC 探测 worker（ASCII-only，PS 5.1 兼容）
+├── scripts/
+│   └── smtc-probe.ps1    # 单独验证 SMTC 能否读到网易云会话
 ├── docs/                 # 效果截图
 ├── locale/               # 展示名称与描述（en / zh）
+├── .github/              # Issue 与 Pull Request 模板
+├── CONTRIBUTING.md       # 贡献流程、代码约定与提交规范
+├── SECURITY.md           # 安全问题报告方式与关注范围
+├── CHANGELOG.md          # 版本变更记录
 └── icon.svg              # 插件图标
 ```
 
@@ -119,6 +133,16 @@ dsh-plugin-netease-lyrics/
 
 **颜色/位置不对？**
 歌词样式是从状态行现场克隆的，若 DSH 更新改了状态行实现，重新刷新页面即可。
+
+## 开发与贡献
+
+环境准备、本地生效方式、代码约定与提交规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。只想先跑一遍语法自检：
+
+```powershell
+npm run check
+```
+
+提缺陷时请附上系统媒体控件开关状态，以及控制台里 `[netease-lyrics]` 开头的告警原文，缺这两项多数问题无法定位。安全问题按 [SECURITY.md](SECURITY.md) 走私密报告，不要开公开 issue。
 
 ## 致谢
 

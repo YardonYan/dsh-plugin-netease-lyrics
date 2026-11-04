@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 排障速查
+    url: https://github.com/yardon/dsh-plugin-netease-lyrics#排障速查
+    about: 歌词不显示、卡住不走、颜色或位置不对，先按这里逐项排查
+  - name: 安全问题
+    url: https://github.com/yardon/dsh-plugin-netease-lyrics/security/advisories/new
+    about: 本机路由越权、Origin 校验绕过等问题请走私密报告，不要开公开 issue

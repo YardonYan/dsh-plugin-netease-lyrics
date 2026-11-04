@@ -1,0 +1,74 @@
+name: 缺陷报告
+description: 歌词不显示、位置或颜色不对、worker 反复退出等行为问题
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前请先看 README 的排障速查。歌词完全不显示时，最常见的原因是网易云没有打开系统媒体控件。
+        本模板只填客观信息，不需要附带评价性描述。
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本
+      description: 安装包版本号，或 dsh --version 的输出
+    validations:
+      required: true
+
+  - type: input
+    id: netease-version
+    attributes:
+      label: 网易云音乐版本
+      placeholder: 例如 3.1.5
+    validations:
+      required: true
+
+  - type: dropdown
+    id: smtc-enabled
+    attributes:
+      label: 系统媒体控件开关状态
+      description: 网易云 - 设置 - 播放 - 系统媒体控件
+      options:
+        - 已打开
+        - 未打开
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从打开哪一首歌开始写，逐步列到问题出现
+      placeholder: |
+        1. 打开网易云播放某首歌
+        2. 在 DSH 中发送一条消息
+        3. 观察状态行右侧
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果与实际结果
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: 控制台告警
+      description: 浏览器 F12 控制台里 netease-lyrics 相关的输出，没有则写无
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 系统与运行环境
+      placeholder: 例如 Windows 11 23H2，Chrome 130
+    validations:
+      required: true

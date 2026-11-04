@@ -1,0 +1,32 @@
+name: 功能建议
+description: 希望插件支持的新行为或新平台
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 你在什么情况下需要这个能力，现在是怎么绕过的
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的行为
+      description: 描述看到什么、听到什么，不必给出实现方案
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        与项目定位冲突的建议可能不会采纳，例如让歌词常显、脱离宿主状态行独立浮窗、引入需要登录的歌词源。这类改动会破坏插件的隐蔽前提。

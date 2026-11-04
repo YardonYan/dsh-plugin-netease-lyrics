@@ -11,8 +11,10 @@
 <line x1="80" y1="92" x2="1200" y2="92" stroke="#2E2B27" stroke-width="1"/>
 <text x="80" y="60" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="11" letter-spacing="3" fill="#6E6862">DSH PLUGIN · WINDOWS · MIT</text>
 
-<text x="80" y="156" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="50" font-weight="600" fill="#F4EFE6">把歌词藏进状态行</text>
-<text x="80" y="190" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="18" fill="#928C84">Lyrics folded into a status line that nobody reads twice.</text>
+<text x="80" y="156" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="50" font-weight="600" fill="#F4EFE6">把歌词藏进</text>
+<text x="344" y="156" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="56" font-weight="700" letter-spacing="2" fill="#F4EFE6">DSH</text>
+<text x="480" y="156" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="50" font-weight="600" fill="#F4EFE6">状态行</text>
+<text x="80" y="190" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="18" fill="#928C84">A DeepSeek Harness plugin — the lyric folds into a status line nobody reads twice.</text>
 
 <g>
   <rect x="80" y="214" width="2.6" height="6" rx="1.3" fill="#C1584A"/>

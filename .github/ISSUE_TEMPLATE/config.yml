@@ -6,3 +6,6 @@ contact_links:
   - name: 安全问题
     url: https://github.com/YardonYan/dsh-plugin-netease-lyrics/security/advisories/new
     about: 本机路由越权、Origin 校验绕过等问题请走私密报告，不要开公开 issue
+  - name: 共创讨论
+    url: https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions
+    about: 想适配其他系统或音乐平台但还没定方案，先来这里聊，不用急着写代码

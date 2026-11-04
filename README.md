@@ -4,6 +4,8 @@ DeepSeek Harness（DSH）摸鱼歌词插件：桌面网易云音乐在放什么�
 
 > 灵感：工作时要听歌，但把网易云切出来看歌词太张扬。不如让歌词藏进 DSH 自己的状态行里。
 
+> **目前只支持 Windows 宿主加桌面版网易云音乐。** 其他系统与其他音乐平台的适配，欢迎一起做：有想法先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 说，准备动手前看 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 效果预览
 
 DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的橙色小字：
@@ -57,7 +59,7 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
 
 ## 一起共创
 
-仓库已经开源，缺陷、适配、新功能都欢迎直接提。
+仓库已经开源，缺陷、适配、新功能都欢迎直接提。还没想清方案的，先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 聊，定了再写代码也不迟。
 
 最值得做的两件事：
 

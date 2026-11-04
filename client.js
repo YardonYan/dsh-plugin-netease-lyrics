@@ -329,17 +329,47 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots'],
       apply(ctx, config) {
         // `anchorText` lets non-Chinese hosts retarget the status line; a
         // missing or malformed value keeps the built-in behaviour.
         const anchorText = resolveAnchorText(config, configFromContext(ctx));
-        ctx.slots.inject('conversation.input.dock', () =>
-          ctx.slots.register(
-            { name: 'conversation.input.dock', id: 'netease-lyrics', order: 5 },
-            (props) => h(LyricsRow, { ...props, anchorText }),
-          ),
-        );
+        // The host treats a failing client plugin as fatal: a single throw
+        // here blocks the whole web boot. So nothing below assumes a ready
+        // service — the dock is registered through `ctx.inject(['slots'])`,
+        // which waits for the service instead of reading it at activation
+        // time, and every step is guarded. Worst case the lyrics stay idle.
+        const mountDock = (scope) => {
+          try {
+            const slots = (scope && scope.slots)
+              || ctx.slots
+              || (typeof ctx.get === 'function' ? ctx.get('slots') : undefined);
+            if (!slots || typeof slots.inject !== 'function' || typeof slots.register !== 'function') return;
+            slots.inject('conversation.input.dock', () =>
+              slots.register(
+                { name: 'conversation.input.dock', id: 'netease-lyrics', order: 5 },
+                (props) => h(LyricsRow, { ...props, anchorText }),
+              ),
+            );
+          } catch (error) {
+            ctx.logger?.warn?.(
+              `netease-lyrics: dock slot unavailable, staying idle: ${error?.message ?? error}`,
+            );
+          }
+        };
+        try {
+          if (typeof ctx.inject === 'function' && typeof ctx.effect === 'function') {
+            ctx.effect(
+              () => ctx.inject(['slots'], mountDock),
+              'netease-lyrics: dock slot',
+            );
+            return;
+          }
+          mountDock(ctx);
+        } catch (error) {
+          ctx.logger?.warn?.(
+            `netease-lyrics: dock slot unavailable, staying idle: ${error?.message ?? error}`,
+          );
+        }
       },
     };
   },

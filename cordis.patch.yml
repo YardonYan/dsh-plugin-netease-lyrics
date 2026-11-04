@@ -1,0 +1,4 @@
+- insert:
+    - id: netease-lyrics
+      name: 'dsh-plugin-netease-lyrics'
+      config: {}

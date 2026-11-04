@@ -107,6 +107,8 @@ window.__ModuleLoader__.load({
       const songRef = React.useRef('');
       const localBaseRef = React.useRef({ base: 0, at: Date.now(), playing: false });
       const anchorRef = React.useRef(null);
+      const spanRef = React.useRef(null);
+      const [hovering, setHovering] = React.useState(false);
       const findAnchorRef = React.useRef(null);
       if (findAnchorRef.current === null) findAnchorRef.current = makeAnchorFinder(anchorText);
 
@@ -223,6 +225,36 @@ window.__ModuleLoader__.load({
         });
       }, [now, state]);
 
+      // Hover detection without hit-testing: the lyric overlay deliberately
+      // keeps `pointer-events: none` so it can never steal clicks from the
+      // composer — which also means the native `title` tooltip never fires.
+      // Compare the cursor against the rendered rect instead, so the full
+      // line and its translation stay reachable without becoming clickable.
+      React.useEffect(() => {
+        if (!anchor) {
+          setHovering((prev) => (prev ? false : prev));
+          return undefined;
+        }
+        let frame = 0;
+        const onMove = (event) => {
+          if (frame !== 0) return;
+          frame = window.requestAnimationFrame(() => {
+            frame = 0;
+            const node = spanRef.current;
+            if (node === null) return;
+            const rect = node.getBoundingClientRect();
+            const inside = event.clientX >= rect.left && event.clientX <= rect.right
+              && event.clientY >= rect.top && event.clientY <= rect.bottom;
+            setHovering((prev) => (prev === inside ? prev : inside));
+          });
+        };
+        document.addEventListener('mousemove', onMove, { passive: true });
+        return () => {
+          document.removeEventListener('mousemove', onMove);
+          if (frame !== 0) window.cancelAnimationFrame(frame);
+        };
+      }, [anchor]);
+
       const { rows, hasSong } = state;
       const base = localBaseRef.current;
       const position = base.playing ? base.base + (now - base.at) / 1000 : base.base;
@@ -242,8 +274,12 @@ window.__ModuleLoader__.load({
       // Anchored mode: viewport-fixed span beside the activity line with
       // identical typography. The wrapper itself stays zero-size so the dock
       // slot keeps its layout.
+      const detail = active.trans ? `${active.text}\n${active.trans}` : active.text;
+      const tipWidth = 320;
+      const tipLeft = Math.max(8, Math.min(anchor.left, window.innerWidth - tipWidth - 16));
       return h('div', { style: { height: 0 } },
           h('span', {
+            ref: spanRef,
             style: {
               position: 'fixed',
               left: anchor.left,
@@ -264,8 +300,31 @@ window.__ModuleLoader__.load({
               color: anchor.color,
               letterSpacing: anchor.letterSpacing,
             },
-            title: active.trans ? `${active.text}\n${active.trans}` : active.text,
           }, active.text),
+          hovering
+            ? h('div', {
+                style: {
+                  position: 'fixed',
+                  left: tipLeft,
+                  top: Math.max(anchor.top - 34, 8),
+                  maxWidth: tipWidth,
+                  padding: '6px 10px',
+                  borderRadius: 6,
+                  background: 'rgba(23, 23, 26, 0.95)',
+                  color: '#ffffff',
+                  fontFamily: anchor.fontFamily,
+                  fontSize: '12px',
+                  fontWeight: 400,
+                  lineHeight: '18px',
+                  letterSpacing: 0,
+                  whiteSpace: 'pre-line',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  zIndex: 2147483647,
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.28)',
+                },
+              }, detail)
+            : null,
       );
     }
 

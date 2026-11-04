@@ -21,12 +21,12 @@
   "keywords": ["dsh", "dsh-plugin", "netease", "lyrics", "lrc", "smtc", "windows"],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yardon/dsh-plugin-netease-lyrics.git"
+    "url": "git+https://github.com/YardonYan/dsh-plugin-netease-lyrics.git"
   },
   "bugs": {
-    "url": "https://github.com/yardon/dsh-plugin-netease-lyrics/issues"
+    "url": "https://github.com/YardonYan/dsh-plugin-netease-lyrics/issues"
   },
-  "homepage": "https://github.com/yardon/dsh-plugin-netease-lyrics#readme",
+  "homepage": "https://github.com/YardonYan/dsh-plugin-netease-lyrics#readme",
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {

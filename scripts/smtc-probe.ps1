@@ -14,16 +14,24 @@ foreach ($s in $sessions) {
   $mp = Await ($s.TryGetMediaPropertiesAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties])
   $tl = $s.GetTimelineProperties()
   $pb = $s.GetPlaybackInfo()
+
+  # GlobalSystemMediaTransportControlsSessionTimelineProperties 只有六个属性：
+  # StartTime / EndTime / Position / LastUpdatedTime / MinSeekTime / MaxSeekTime。
+  # 其中时间字段允许为 null（未上报），直接 .ToString() 会抛异常并中断整轮探测。
+  $pos = if ($null -ne $tl.Position) { [math]::Round($tl.Position.TotalSeconds, 2) } else { $null }
+  $dur = if ($null -ne $tl.EndTime) { [math]::Round($tl.EndTime.TotalSeconds, 1) } else { $null }
+  $lastUpd = if ($null -ne $tl.LastUpdatedTime) { $tl.LastUpdatedTime.ToString('o') } else { "" }
+
   $out = [ordered]@{
     AppId = $s.SourceAppUserModelId
     Title = $mp.Title
     Artist = $mp.Artist
     Album = $mp.AlbumTitle
     Status = "$($pb.PlaybackStatus)"
-    PositionSec = [math]::Round($tl.Position.TotalSeconds,2)
-    PosUpdateTime = "$($tl.PositionUpdateTime.ToString('o'))"
-    Duration = [math]::Round($tl.EndTime.TotalSeconds,1)
-    LastUpdated = "$($tl.LastUpdatedTime.ToString('o'))"
+    PositionSec = $pos
+    Duration = $dur
+    LastUpdated = $lastUpd
+    TimelineUsable = [bool]($null -ne $pos -and $pos -gt 0)
   }
   ($out | ConvertTo-Json -Compress)
 }

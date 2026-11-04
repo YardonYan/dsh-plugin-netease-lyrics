@@ -4,7 +4,7 @@
 
 > 灵感：工作时要听歌，但把网易云切出来看歌词太张扬。不如让歌词藏进 DSH 自己的状态行里。
 
-> **目前只支持 Windows 宿主加桌面版网易云音乐。** 其他系统与其他音乐平台的适配，欢迎一起做：有想法先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 说，准备动手前看 [CONTRIBUTING.md](CONTRIBUTING.md)。
+> **目前只支持 Windows 10 / 11 宿主加桌面版网易云音乐。** 其他系统与其他音乐平台的适配，欢迎一起做：有想法先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 说，准备动手前看 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 <p align="center">
   <img src="docs/cover-hero.svg" width="100%" alt="把歌词藏进 DSH 状态行">
@@ -52,7 +52,7 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
                        computed style 现场克隆其字体字号颜色
 ```
 
-\* 网易云 PC 客户端不通过 SMTC 上报播放进度，所以插件自己跑秒表：切歌归零、暂停停表、恢复续走。
+\* 网易云 PC 客户端没有通过 SMTC 上报播放位置，所以插件自己跑秒表：切歌归零、暂停停表、恢复续走。这个判断的依据与复测方法见 [docs/playback-position.md](docs/playback-position.md)。
 
 ## 当前支持范围
 
@@ -115,6 +115,8 @@ dsh plugin --profile web add "<路径>/dsh-plugin-netease-lyrics" --save-exact
 | 仅本机访问 | 路由只响应 loopback + Origin 校验 | 这是安全特性，不开放外露 |
 | 歌词搜索偶尔对不上歌 | 按「歌名 + 歌手」搜索取首个精确匹配 | 少见；纯音乐/翻唱版本多时可能取错 |
 
+上表里与进度有关的两条（拖动进度条后漂移、单曲循环走出歌尾）是同一个成因：网易云不通过 SMTC 上报播放位置，插件只能自己跑秒表推。这个缺口的成因、四条可选路径（系统时间轴 / UI Automation / 登录态 API / 音频指纹）与改动草案写在 [docs/playback-position.md](docs/playback-position.md)。
+
 ## 配置
 
 在 profile 的 `cordis.patch.yml` 中覆盖该插件行：
@@ -150,8 +152,8 @@ dsh-plugin-netease-lyrics/
 ├── client.js             # 浏览器端：锚点定位 + 歌词渲染 + 悬停浮层
 ├── smtc-worker.ps1       # Windows SMTC 探测 worker（ASCII-only，PS 5.1 兼容）
 ├── scripts/
-│   └── smtc-probe.ps1    # 单独验证 SMTC 能否读到网易云会话
-├── docs/                 # 效果截图
+│   └── smtc-probe.ps1    # 单独验证 SMTC 能否读到网易云会话与时间轴
+├── docs/                 # 效果截图与方案文档
 ├── locale/               # 展示名称与描述（en / zh）
 ├── .github/              # Issue 与 Pull Request 模板
 ├── CONTRIBUTING.md       # 贡献流程、代码约定与提交规范

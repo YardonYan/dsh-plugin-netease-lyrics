@@ -26,10 +26,14 @@
 把下面整段发给 DSH 的会话，让它替你装：
 
 ```text
-帮我装一个 DSH 插件：https://github.com/YardonYan/dsh-plugin-netease-lyrics
+帮我装一个 DSH 插件：
+https://github.com/YardonYan/dsh-plugin-netease-lyrics
 
-克隆到本地任意目录，用 dsh plugin --profile web add "<克隆路径>" --save-exact 装进 web profile，
-然后重启 dsh web、刷新页面。装完告诉我装到哪个目录、有没有加载报错；有报错就贴原文，不要改代码绕过。
+克隆到本地任意目录，执行：
+dsh plugin --profile web add "<克隆路径>" --save-exact
+装进 web profile，然后重启 dsh web、刷新页面。
+装完告诉我装到哪个目录、有没有加载报错；
+有报错就贴原文，不要改代码绕过。
 ```
 
 **或者手动装**

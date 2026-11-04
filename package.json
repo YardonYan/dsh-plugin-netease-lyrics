@@ -13,7 +13,8 @@
   },
   "files": ["index.js", "client.js", "smtc-worker.ps1", "cordis.patch.yml", "locale/*.json", "icon.svg", "docs/*.png", "README.md", "LICENSE"],
   "scripts": {
-    "check": "node --check index.js && node --check client.js"
+    "check": "node --check index.js && node --check client.js",
+    "test": "node --test test/apply-guard.test.mjs"
   },
   "engines": {
     "node": ">=18"

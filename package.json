@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Netease Cloud Music lyrics beside the DSH activity line, disguised as part of it.",
   "license": "MIT",
+  "author": "Yardon",
   "type": "module",
   "exports": {
     ".": "./index.js",
@@ -10,7 +11,22 @@
     "./locale/*.json": "./locale/*.json",
     "./icon": "./icon.svg"
   },
-  "files": ["index.js", "client.js", "smtc-worker.ps1", "cordis.patch.yml", "locale/*.json", "icon.svg", "README.md", "LICENSE"],
+  "files": ["index.js", "client.js", "smtc-worker.ps1", "cordis.patch.yml", "locale/*.json", "icon.svg", "docs/*.png", "README.md", "LICENSE"],
+  "scripts": {
+    "check": "node --check index.js && node --check client.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["dsh", "dsh-plugin", "netease", "lyrics", "lrc", "smtc", "windows"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yardon/dsh-plugin-netease-lyrics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yardon/dsh-plugin-netease-lyrics/issues"
+  },
+  "homepage": "https://github.com/yardon/dsh-plugin-netease-lyrics#readme",
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {

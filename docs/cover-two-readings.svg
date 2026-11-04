@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="620" viewBox="0 0 1600 620" role="img" aria-label="同一行字，两种读法">
+<rect width="1600" height="620" fill="#FBF7EE"/>
+
+<line x1="80" y1="88" x2="1520" y2="88" stroke="#E7DFD0" stroke-width="1"/>
+<text x="80" y="64" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="11" letter-spacing="3" fill="#A8A29E">外观 / WHAT IT LOOKS LIKE</text>
+<text x="1520" y="64" text-anchor="end" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="2.2" fill="#C7BFB0">02</text>
+
+<text x="80" y="152" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="38" font-weight="600" fill="#1C1917">同一行字，两种读法</text>
+<text x="80" y="184" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="15" fill="#78716C">One line, two readings. The pixels are identical; only the meaning changes.</text>
+
+<rect x="80" y="216" width="1440" height="150" rx="8" fill="#1B1A18"/>
+<text x="108" y="248" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="9.5" letter-spacing="2.2" fill="#5E5852">别人看到的 / WHAT OTHERS SEE</text>
+<text x="108" y="304" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="48" fill="#8E7255">深度求索中，用时 8 秒 … 把所有的春天 都揉进了一个清晨</text>
+
+<rect x="80" y="382" width="1440" height="150" rx="8" fill="#1F1C18" stroke="#3A2E23" stroke-width="1"/>
+<text x="108" y="414" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="9.5" letter-spacing="2.2" fill="#8A6A4C">你看到的 / WHAT YOU SEE</text>
+<text x="108" y="470" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="48" fill="#E08A45">深度求索中，用时 8 秒 … 把所有的春天 都揉进了一个清晨</text>
+<path d="M664 486 H1350" stroke="#E08A45" stroke-opacity="0.45" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="1364" y="490" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="9.5" letter-spacing="2" fill="#B4825A">LYRIC</text>
+
+<text x="80" y="580" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="14" fill="#78716C">两段文字一模一样。区别只在——你知道最后那半句不是状态话。</text>
+</svg>

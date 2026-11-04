@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" role="img" aria-label="数据从播放器流到状态行">
+<rect width="1600" height="520" fill="#FBF7EE"/>
+
+<line x1="80" y1="88" x2="1520" y2="88" stroke="#E7DFD0" stroke-width="1"/>
+<text x="80" y="64" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="11" letter-spacing="3" fill="#A8A29E">结构 / HOW IT WORKS</text>
+<text x="1520" y="64" text-anchor="end" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="2.2" fill="#C7BFB0">03</text>
+
+<text x="80" y="154" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="38" font-weight="600" fill="#1C1917">一句话，从播放器走到状态行</text>
+<text x="80" y="186" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="15" fill="#78716C">Five stations, and the player itself is never polled: the system already knows what is playing.</text>
+
+<line x1="190" y1="300" x2="1410" y2="300" stroke="#D5CEC0" stroke-width="1.4"/>
+<text x="190" y="246" text-anchor="middle" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="1.6" fill="#B9B2A5">01</text>
+<text x="190" y="272" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="20" font-weight="600" fill="#1C1917">桌面网易云</text>
+<circle cx="190" cy="300" r="5" fill="#FBF7EE" stroke="#2F5D50" stroke-width="2.4"/>
+<text x="190" y="344" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">正在播放</text>
+<text x="190" y="367" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">歌名 · 歌手</text>
+<text x="190" y="390" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">播放状态</text>
+<text x="495" y="246" text-anchor="middle" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="1.6" fill="#B9B2A5">02</text>
+<text x="495" y="272" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="20" font-weight="600" fill="#1C1917">系统媒体接口</text>
+<circle cx="495" cy="300" r="5" fill="#FBF7EE" stroke="#2F5D50" stroke-width="2.4"/>
+<text x="495" y="344" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">Windows SMTC</text>
+<text x="495" y="367" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">Windows 独占</text>
+<text x="495" y="390" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">无需登录</text>
+<text x="800" y="246" text-anchor="middle" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="1.6" fill="#B9B2A5">03</text>
+<text x="800" y="272" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="20" font-weight="600" fill="#1C1917">Host 端</text>
+<circle cx="800" cy="300" r="5" fill="#FBF7EE" stroke="#2F5D50" stroke-width="2.4"/>
+<text x="800" y="344" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">常驻 PowerShell</text>
+<text x="800" y="367" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">每秒读一次</text>
+<text x="800" y="390" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">秒表推算进度</text>
+<text x="1105" y="246" text-anchor="middle" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="1.6" fill="#B9B2A5">04</text>
+<text x="1105" y="272" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="20" font-weight="600" fill="#1C1917">歌词路由</text>
+<circle cx="1105" cy="300" r="5" fill="#FBF7EE" stroke="#2F5D50" stroke-width="2.4"/>
+<text x="1105" y="344" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">music.163.com</text>
+<text x="1105" y="367" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">LRC 与翻译</text>
+<text x="1105" y="390" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">同源 HTTP</text>
+<text x="1410" y="246" text-anchor="middle" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="1.6" fill="#B9B2A5">05</text>
+<text x="1410" y="272" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="20" font-weight="600" fill="#1C1917">浏览器端</text>
+<circle cx="1410" cy="300" r="5" fill="#FBF7EE" stroke="#2F5D50" stroke-width="2.4"/>
+<text x="1410" y="344" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">每秒轮询</text>
+<text x="1410" y="367" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">克隆状态行样式</text>
+<text x="1410" y="390" text-anchor="middle" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="13.5" fill="#78716C">贴在其右侧</text>
+<line x1="202" y1="300" x2="481" y2="300" stroke="#D5CEC0" stroke-width="1.4"/>
+<path d="M481 284 l-6.8 -3.6 v7.2 z" fill="#B9B2A5"/>
+<line x1="507" y1="300" x2="786" y2="300" stroke="#D5CEC0" stroke-width="1.4"/>
+<path d="M786 284 l-6.8 -3.6 v7.2 z" fill="#B9B2A5"/>
+<line x1="812" y1="300" x2="1091" y2="300" stroke="#D5CEC0" stroke-width="1.4"/>
+<path d="M1091 284 l-6.8 -3.6 v7.2 z" fill="#B9B2A5"/>
+<line x1="1117" y1="300" x2="1396" y2="300" stroke="#D5CEC0" stroke-width="1.4"/>
+<path d="M1396 284 l-6.8 -3.6 v7.2 z" fill="#B9B2A5"/>
+
+<text x="80" y="476" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="14" fill="#78716C">取数端与渲染端都能换：接别的系统、接别的歌词源，中间那段推算不用动。</text>
+</svg>

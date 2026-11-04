@@ -6,6 +6,10 @@ DeepSeek Harness（DSH）摸鱼歌词插件：桌面网易云音乐在放什么�
 
 > **目前只支持 Windows 宿主加桌面版网易云音乐。** 其他系统与其他音乐平台的适配，欢迎一起做：有想法先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 说，准备动手前看 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
+<p align="center">
+  <img src="docs/cover-hero.svg" width="100%" alt="把歌词藏进 DSH 状态行">
+</p>
+
 ## 效果预览
 
 DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的橙色小字：
@@ -22,7 +26,15 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
 
 不仔细看，只会觉得这句状态话有点长——只有你知道那是歌词。
 
+<p align="center">
+  <img src="docs/cover-two-readings.svg" width="100%" alt="同一行字，两种读法">
+</p>
+
 ## 工作原理
+
+<p align="center">
+  <img src="docs/cover-flow.svg" width="100%" alt="一句话，从播放器走到状态行">
+</p>
 
 ```
 桌面网易云音乐 ──播放──▶ Windows SMTC 系统媒体接口（歌名 / 歌手 / 播放状态）

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="560" viewBox="0 0 1600 560" role="img" aria-label="dsh-plugin-netease-lyrics：把歌词藏进 DSH 状态行">
+<defs>
+  <radialGradient id="g" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#E08A45" stop-opacity="0.10"/>
+    <stop offset="1" stop-color="#E08A45" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="1600" height="560" fill="#191817"/>
+<ellipse cx="680" cy="338" rx="600" ry="165" fill="url(#g)"/>
+
+<line x1="80" y1="88" x2="1520" y2="88" stroke="#2E2B27" stroke-width="1"/>
+<text x="80" y="64" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="11" letter-spacing="3" fill="#6E6862">DSH PLUGIN · WINDOWS · MIT</text>
+<text x="1520" y="64" text-anchor="end" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="2.2" fill="#56504A">NETEASE CLOUD MUSIC · SMTC</text>
+
+<text x="80" y="164" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="52" font-weight="600" fill="#F4EFE6">把歌词藏进状态行</text>
+<text x="80" y="200" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="19" fill="#928C84">Lyrics folded into a status line that nobody reads twice.</text>
+
+<g>
+  <rect x="80" y="224" width="2.6" height="6" rx="1.3" fill="#C1584A"/>
+  <rect x="85.2" y="221" width="2.6" height="12" rx="1.3" fill="#C1584A"/>
+  <rect x="90.4" y="225.5" width="2.6" height="4.5" rx="1.3" fill="#C1584A"/>
+</g>
+<text x="101" y="232" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="11.5" letter-spacing="1.4" fill="#6E6862">正在播放 · 春风十里 — 鹿先森乐队</text>
+
+<rect x="80" y="258" width="1440" height="196" rx="10" fill="#1E1D1B" stroke="#2F2C27" stroke-width="1"/>
+
+<g>
+  <ellipse cx="100" cy="338" rx="5.4" ry="4.1" transform="rotate(-20 100 330)" fill="#E08A45"/>
+  <path d="M105 338 V314" fill="none" stroke="#E08A45" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M105 314 q9 3 9 12" fill="none" stroke="#E08A45" stroke-width="2.4" stroke-linecap="round"/>
+</g>
+<text x="126" y="338" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="34" font-weight="500" fill="#E08A45">深度求索中，用时 8 秒</text>
+<text x="484" y="338" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="34" fill="#E08A45" fill-opacity="0.55">…</text>
+<text x="528" y="338" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="34" font-weight="500" fill="#E08A45">把所有的春天 都揉进了一个清晨</text>
+
+<path d="M528 370 v7 H1014 v-7" fill="none" stroke="#E08A45" stroke-opacity="0.42" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="528" y="396" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="11.5" letter-spacing="1.2" fill="#7C756D">这句是歌词 / THE LYRIC</text>
+
+<text x="80" y="512" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, system-ui, sans-serif" font-size="14" fill="#6E6862">同字体、同字号、同颜色。不仔细看，只会觉得这句话有点长。</text>
+<text x="1520" y="511" text-anchor="end" font-family="JetBrains Mono, SF Mono, Menlo, Consolas, monospace" font-size="10" letter-spacing="2" fill="#56504A">FONT · SIZE · COLOR — ALL CLONED</text>
+</svg>

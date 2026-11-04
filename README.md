@@ -10,6 +10,61 @@
   <img src="docs/cover-hero.svg" width="100%" alt="把歌词藏进 DSH 状态行">
 </p>
 
+<table>
+<tr>
+<td width="55%" valign="top">
+
+## 安装
+
+**环境要求**
+
+- DeepSeek Harness，Windows 10 / 11 宿主
+- 桌面版网易云音乐，且在 **设置 → 播放** 打开「系统媒体控件」类开关。不开的话 SMTC 读不到播放状态，这是最容易踩的坑
+
+**在 DSH 会话里装（推荐）**
+
+把下面整段发给 DSH 的会话，让它替你装：
+
+```text
+帮我装一个 DSH 插件：https://github.com/YardonYan/dsh-plugin-netease-lyrics
+
+克隆到本地任意目录，用 dsh plugin --profile web add "<克隆路径>" --save-exact 装进 web profile，
+然后重启 dsh web、刷新页面。装完告诉我装到哪个目录、有没有加载报错；有报错就贴原文，不要改代码绕过。
+```
+
+**或者手动装**
+
+```powershell
+dsh plugin --profile web add "<克隆路径>/dsh-plugin-netease-lyrics" --save-exact
+```
+
+装完重启 `dsh web`（Host 端需要加载进程），刷新页面。
+
+</td>
+<td width="45%" valign="top">
+
+## 一起共创
+
+仓库已经开源，缺陷、适配、新功能都欢迎直接提。还没想清方案的，先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 聊，定了再写代码也不迟。
+
+最值得做的两件事：
+
+- **适配其他系统**：把 `smtc-worker.ps1` 换成对应系统的取数方式，宿主端与浏览器端基本不用动
+- **适配其他音乐平台**：`smtc-worker.ps1` 目前按 `*cloudmusic*` 过滤会话，放开匹配就能拿到别的播放器，剩下要补的是歌词源
+
+换歌词源、修歌词匹配、调界面细节、补截图与文档同样欢迎，流程与代码约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+</td>
+</tr>
+</table>
+
+## 使用
+
+1. 打开桌面网易云放一首歌
+2. 在 DSH 里随便发一条消息让 AI 转起来
+3. 「深度求索中」状态行右边会出现同样式的歌词，跟着演唱进度换行
+4. 鼠标悬停歌词可看完整句和翻译（如果有）；浮层不拦截点击，下方控件照常可用
+
 ## 效果预览
 
 DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的橙色小字：
@@ -68,40 +123,6 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
 - 播放状态来自 Windows 的系统媒体传输控件（SMTC），属于 Windows 独占接口。macOS 要另找系统级正在播放接口，Linux 走 MPRIS（D-Bus），取数方式与 Windows 完全不同
 - 歌词检索走网易云的公开接口，换音乐平台就得另接歌词源，还要按对方的曲目 ID 体系重写匹配逻辑
 - 播放状态与歌词源必须成对替换，只换一边跑不起来
-
-## 一起共创
-
-仓库已经开源，缺陷、适配、新功能都欢迎直接提。还没想清方案的，先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 聊，定了再写代码也不迟。
-
-最值得做的两件事：
-
-- **适配其他系统**：把 `smtc-worker.ps1` 换成对应系统的取数方式，宿主端与浏览器端基本不用动。Windows 之外没有 SMTC，需要各自找系统级正在播放接口
-- **适配其他音乐平台**：Windows 上 SMTC 覆盖所有注册了系统媒体控件的播放器，`smtc-worker.ps1` 目前按 `*cloudmusic*` 过滤会话，放开匹配就能拿到 QQ 音乐、Spotify 等播放器的曲目，剩下要补的是歌词源
-
-换歌词源、修歌词匹配、调界面细节、补截图与文档同样欢迎。流程与代码约定见 [CONTRIBUTING.md](CONTRIBUTING.md)；只有想法、还没想清怎么落地的，用功能建议模板开个 issue 讲清使用场景就行，不用先写代码。
-
-## 安装
-
-### 环境要求
-
-- DeepSeek Harness（**Windows 宿主**；SMTC 是 Windows 独占 API，其他平台插件保持静默不报错，适配方法见上方「一起共创」）
-- 桌面版网易云音乐，且已在 **设置 → 播放** 打开「系统媒体控件」类开关（不开的话 SMTC 读不到播放状态，这是最容易踩的坑）
-
-### 步骤
-
-```powershell
-# 在 DSH 会话中直接安装（<路径> 换成仓库克隆位置）
-dsh plugin --profile web add "<路径>/dsh-plugin-netease-lyrics" --save-exact
-```
-
-或在 DSH 的插件管理里以本地目录 bundle 方式安装。安装后**重启 `dsh web`**（Host 端需要加载进程），刷新页面。
-
-### 使用
-
-1. 打开桌面网易云放一首歌
-2. 在 DSH 里随便发一条消息让 AI 转起来
-3. 「深度求索中」状态行右边会出现同样式的歌词，跟着演唱进度换行
-4. 鼠标悬停歌词可看完整句和翻译（如果有）；浮层不拦截点击，下方控件照常可用
 
 ## 必读：注意事项与已知限制
 

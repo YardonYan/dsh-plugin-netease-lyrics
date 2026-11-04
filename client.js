@@ -23,6 +23,26 @@ window.__ModuleLoader__.load({
     const anchorRegexOf = (text) =>
       new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 
+    /**
+     * Resolve the configured anchor text. Depending on the host version the
+     * plugin config arrives as the second `apply` argument or hangs off the
+     * context, so probe both carriers and fall back to the built-in line.
+     */
+    function resolveAnchorText(...sources) {
+      for (const source of sources) {
+        const candidate = typeof source === 'string'
+          ? source
+          : (source && typeof source === 'object' ? source.anchorText : null);
+        if (typeof candidate === 'string' && candidate.trim() !== '') return candidate.trim();
+      }
+      return DEFAULT_ANCHOR_TEXT;
+    }
+
+    function configFromContext(ctx) {
+      if (!ctx) return undefined;
+      return ctx.config ?? ctx.options ?? (ctx.plugin && ctx.plugin.config);
+    }
+
     // Native XPath text search: C++-speed over the whole document, no node
     // cap, so it keeps working as the conversation grows long. Match the
     // first distinctive fragment in case the line splits its text across
@@ -77,7 +97,7 @@ window.__ModuleLoader__.load({
       };
     }
 
-    function LyricsRow() {
+    function LyricsRow({ anchorText = DEFAULT_ANCHOR_TEXT }) {
       const [state, setState] = React.useState({
         hasSong: false, playing: false, title: '', artist: '',
         position: 0, rows: [], syncedAt: 0, supported: true, workerAlive: true,
@@ -87,7 +107,8 @@ window.__ModuleLoader__.load({
       const songRef = React.useRef('');
       const localBaseRef = React.useRef({ base: 0, at: Date.now(), playing: false });
       const anchorRef = React.useRef(null);
-      const findAnchorRef = React.useRef(makeAnchorFinder(DEFAULT_ANCHOR_TEXT));
+      const findAnchorRef = React.useRef(null);
+      if (findAnchorRef.current === null) findAnchorRef.current = makeAnchorFinder(anchorText);
 
       React.useEffect(() => {
         const timer = setInterval(() => setNow(Date.now()), 250);
@@ -250,11 +271,14 @@ window.__ModuleLoader__.load({
 
     return {
       inject: ['slots'],
-      apply(ctx) {
+      apply(ctx, config) {
+        // `anchorText` lets non-Chinese hosts retarget the status line; a
+        // missing or malformed value keeps the built-in behaviour.
+        const anchorText = resolveAnchorText(config, configFromContext(ctx));
         ctx.slots.inject('conversation.input.dock', () =>
           ctx.slots.register(
             { name: 'conversation.input.dock', id: 'netease-lyrics', order: 5 },
-            LyricsRow,
+            (props) => h(LyricsRow, { ...props, anchorText }),
           ),
         );
       },

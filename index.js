@@ -28,6 +28,11 @@ export const inject = ["webServer"];
 
 const ROUTE_PREFIX = "/plugin/netease-lyrics";
 const LYRIC_CACHE_MAX = 30;
+const LYRIC_TTL_OK = 1000 * 60 * 60 * 24 * 7; // success: one week
+const LYRIC_TTL_FAIL = 1000 * 60; // failure: one minute, then retry
+// Set by searchSong when music.163.com rate-limits us (code 405); the active
+// apply() instance reads it to choose the global backoff duration.
+let lastSearchBlocked = false;
 
 function log(...parts) {
   try {
@@ -148,7 +153,20 @@ async function searchSong(title, artist) {
       `https://music.163.com/api/search/get/web?s=${encodeURIComponent(keywords)}&type=1&limit=3`,
       { signal: controller.signal, method: "POST" },
     );
-    const body = await res.json();
+    let body;
+    try {
+      body = await res.json();
+    } catch {
+      lastSearchBlocked = true;
+      return null;
+    }
+    // 163.com answers 405 with "操作频繁" when rate-limited; the caller backs
+    // off globally instead of retrying per poll.
+    if (body?.code === 405 || (typeof body?.msg === "string" && body.msg.includes("频繁"))) {
+      lastSearchBlocked = true;
+      return null;
+    }
+    lastSearchBlocked = false;
     const songs = body?.result?.songs;
     if (!Array.isArray(songs) || songs.length === 0) return null;
     // Prefer a song whose name matches the reported title exactly.
@@ -192,8 +210,10 @@ function applyInner(ctx, config = {}) {
     playingSince: 0, // host clock when playback of this position started
     positionBase: 0, // seconds counted before playingSince
     lastReportAt: 0,
-    lyrics: new Map(), // songKey -> { rows, fetchedAt }
+    lyrics: new Map(), // songKey -> { rows, fetchedAt, songId }
     lyricsInflight: new Map(),
+    lyricsBlockedUntil: 0, // global backoff while the search API rate-limits
+    lastSearchBlocked: false,
   };
 
   const songKeyOf = (s) => `${s.title}|${s.artist}`;
@@ -283,13 +303,31 @@ function applyInner(ctx, config = {}) {
   async function ensureLyrics(title, artist) {
     const key = songKeyOf({ title, artist });
     const cached = state.lyrics.get(key);
-    if (cached && Date.now() - cached.fetchedAt < 1000 * 60 * 60 * 24 * 7) return cached;
+    if (cached) {
+      // Success entries live 7 days. Failures (rate limit, no match) are only
+      // negative-cached briefly so a later poll retries instead of pinning an
+      // empty result for a week (regression: 163.com 405 "操作频繁" rate limit).
+      const ttl = cached.rows.length > 0 ? LYRIC_TTL_OK : LYRIC_TTL_FAIL;
+      if (Date.now() - cached.fetchedAt < ttl) return cached;
+    }
     const inflight = state.lyricsInflight.get(key);
     if (inflight) return inflight;
+    // Circuit breaker: when the search API rate-limits us, back off globally
+    // instead of hammering it once per client poll.
+    if (state.lyricsBlockedUntil && Date.now() < state.lyricsBlockedUntil) {
+      return cached ?? { rows: [], fetchedAt: 0, songId: null };
+    }
     const task = (async () => {
       try {
         const songId = await searchSong(title, artist);
-        if (!songId) return { rows: [], fetchedAt: Date.now(), songId: null };
+        if (!songId) {
+          // Distinguish rate-limit from "no match": searchSong reports it via
+          // the module-level lastSearchBlocked. Back off 60s on rate limit,
+          // 10s otherwise.
+          const backoff = lastSearchBlocked ? 60000 : 10000;
+          state.lyricsBlockedUntil = Date.now() + backoff;
+          return cached ?? { rows: [], fetchedAt: Date.now(), songId: null };
+        }
         const raw = await fetchLyrics(songId);
         const entry = { rows: mergeLyrics(raw.lrc, raw.trans), fetchedAt: Date.now(), songId };
         state.lyrics.set(key, entry);

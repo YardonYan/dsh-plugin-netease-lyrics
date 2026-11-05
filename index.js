@@ -144,40 +144,57 @@ async function fetchLyrics(songId) {
   }
 }
 
+/** Parse one search response; returns song id or null. Rate-limit aware. */
+function parseSearchBody(body, title) {
+  if (body?.code === 405 || (typeof body?.msg === "string" && body.msg.includes("频繁"))) {
+    lastSearchBlocked = true;
+    return null;
+  }
+  lastSearchBlocked = false;
+  const songs = body?.result?.songs;
+  if (!Array.isArray(songs) || songs.length === 0) return null;
+  // Prefer a song whose name matches the reported title exactly.
+  const wanted = title.toLowerCase();
+  const hit = songs.find((s) => String(s.name).toLowerCase() === wanted) ?? songs[0];
+  return String(hit.id);
+}
+
+/**
+ * Search music.163.com for one song id. Primary endpoint is the web POST
+ * search; when it rate-limits (405, IP-level, can last long) fail over to
+ * the GET /api/search/get variant, which is throttled separately and stayed
+ * reachable in practice while the primary was blocked.
+ */
 async function searchSong(title, artist) {
   const keywords = `${title} ${artist}`.trim();
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
-  try {
-    const res = await fetch(
-      `https://music.163.com/api/search/get/web?s=${encodeURIComponent(keywords)}&type=1&limit=3`,
-      { signal: controller.signal, method: "POST" },
-    );
-    let body;
+  const endpoints = [
+    { url: `https://music.163.com/api/search/get/web?s=${encodeURIComponent(keywords)}&type=1&limit=3`, method: "POST" },
+    { url: `https://music.163.com/api/search/get?s=${encodeURIComponent(keywords)}&type=1&limit=3`, method: "GET" },
+  ];
+  for (const endpoint of endpoints) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
     try {
-      body = await res.json();
+      const res = await fetch(endpoint.url, { signal: controller.signal, method: endpoint.method });
+      let body;
+      try {
+        body = await res.json();
+      } catch {
+        lastSearchBlocked = true;
+        continue; // try the next endpoint
+      }
+      const id = parseSearchBody(body, title);
+      if (id !== null) return id;
+      if (lastSearchBlocked) continue; // rate-limited on this endpoint: try the next
+      // A clean "no results" answer: no point trying other endpoints.
+      return null;
     } catch {
-      lastSearchBlocked = true;
-      return null;
+      /* network error on this endpoint: try the next */
+    } finally {
+      clearTimeout(timer);
     }
-    // 163.com answers 405 with "操作频繁" when rate-limited; the caller backs
-    // off globally instead of retrying per poll.
-    if (body?.code === 405 || (typeof body?.msg === "string" && body.msg.includes("频繁"))) {
-      lastSearchBlocked = true;
-      return null;
-    }
-    lastSearchBlocked = false;
-    const songs = body?.result?.songs;
-    if (!Array.isArray(songs) || songs.length === 0) return null;
-    // Prefer a song whose name matches the reported title exactly.
-    const wanted = title.toLowerCase();
-    const hit = songs.find((s) => String(s.name).toLowerCase() === wanted) ?? songs[0];
-    return String(hit.id);
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
   }
+  return null;
 }
 
 export function apply(ctx, config = {}) {

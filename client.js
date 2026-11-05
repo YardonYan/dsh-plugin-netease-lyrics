@@ -24,9 +24,9 @@ window.__ModuleLoader__.load({
       new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 
     /**
-     * Resolve the configured anchor text. Depending on the host version the
-     * plugin config arrives as the second `apply` argument or hangs off the
-     * context, so probe both carriers and fall back to the built-in line.
+     * Read `anchorText` out of the plugin config. Only the object the host
+     * passes to `apply` is trusted: probing the cordis context for it is what
+     * broke activation in 1.0.0 and 1.0.1, so never reintroduce that path.
      */
     function resolveAnchorText(...sources) {
       for (const source of sources) {
@@ -38,9 +38,18 @@ window.__ModuleLoader__.load({
       return DEFAULT_ANCHOR_TEXT;
     }
 
-    function configFromContext(ctx) {
-      if (!ctx) return undefined;
-      return ctx.config ?? ctx.options ?? (ctx.plugin && ctx.plugin.config);
+    /**
+     * Log without touching `ctx.logger`. Reading an unregistered property off
+     * the cordis context proxy throws during early boot, so even the error
+     * path has to stay clear of it — a throw inside `catch` would escape
+     * `apply` and fail the fiber just the same.
+     */
+    function warn(message, error) {
+      try {
+        console.warn(`[netease-lyrics] ${message}:`, error?.message ?? error);
+      } catch {
+        /* console unavailable: nothing left to report to */
+      }
     }
 
     // Native XPath text search: C++-speed over the whole document, no node
@@ -330,33 +339,34 @@ window.__ModuleLoader__.load({
 
     return {
       apply(ctx, config) {
-        // `anchorText` lets non-Chinese hosts retarget the status line; a
-        // missing or malformed value keeps the built-in behaviour.
-        const anchorText = resolveAnchorText(config, configFromContext(ctx));
-        // The host treats a failing client plugin as fatal: a single throw
-        // here blocks the whole web boot. So nothing below assumes a ready
-        // service — the dock is registered through `ctx.inject(['slots'])`,
-        // which waits for the service instead of reading it at activation
-        // time, and every step is guarded. Worst case the lyrics stay idle.
-        const mountDock = (scope) => {
-          try {
-            const slots = (scope && scope.slots)
-              || ctx.slots
-              || (typeof ctx.get === 'function' ? ctx.get('slots') : undefined);
-            if (!slots || typeof slots.inject !== 'function' || typeof slots.register !== 'function') return;
-            slots.inject('conversation.input.dock', () =>
-              slots.register(
-                { name: 'conversation.input.dock', id: 'netease-lyrics', order: 5 },
-                (props) => h(LyricsRow, { ...props, anchorText }),
-              ),
-            );
-          } catch (error) {
-            ctx.logger?.warn?.(
-              `netease-lyrics: dock slot unavailable, staying idle: ${error?.message ?? error}`,
-            );
-          }
-        };
         try {
+          // `anchorText` lets non-Chinese hosts retarget the status line; a
+          // missing or malformed value keeps the built-in behaviour. Read the
+          // plugin config only — never probe the ctx proxy for it: property
+          // access on the cordis context (ctx.config/ctx.options/…) throws
+          // during early boot, and the swallowed error fails the whole fiber,
+          // which blocks the host's web boot.
+          const anchorText = resolveAnchorText(
+            config && typeof config === 'object' ? config.anchorText : undefined,
+          );
+          // The dock is mounted through `ctx.inject(['slots'])`, which waits
+          // for the service instead of reading it at activation time. Every
+          // step is guarded: worst case the lyrics stay idle.
+          const mountDock = (scope) => {
+            try {
+              const slots = (scope && scope.slots)
+                || (typeof ctx.get === 'function' ? ctx.get('slots') : undefined);
+              if (!slots || typeof slots.inject !== 'function' || typeof slots.register !== 'function') return;
+              slots.inject('conversation.input.dock', () =>
+                slots.register(
+                  { name: 'conversation.input.dock', id: 'netease-lyrics', order: 5 },
+                  (props) => h(LyricsRow, { ...props, anchorText }),
+                ),
+              );
+            } catch (error) {
+              warn('dock slot unavailable, staying idle', error);
+            }
+          };
           if (typeof ctx.inject === 'function' && typeof ctx.effect === 'function') {
             ctx.effect(
               () => ctx.inject(['slots'], mountDock),
@@ -366,9 +376,7 @@ window.__ModuleLoader__.load({
           }
           mountDock(ctx);
         } catch (error) {
-          ctx.logger?.warn?.(
-            `netease-lyrics: dock slot unavailable, staying idle: ${error?.message ?? error}`,
-          );
+          warn('activation degraded, staying idle', error);
         }
       },
     };

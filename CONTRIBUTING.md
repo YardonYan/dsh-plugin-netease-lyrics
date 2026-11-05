@@ -18,7 +18,13 @@
 把当前目录以本地 bundle 方式装进 DSH 的 profile：
 
 ```
-dsh plugin --profile web add "<仓库路径>" --save-exact
+dsh plugin --profile web add "<仓库的绝对路径>"
+```
+
+本地目录会被 pnpm 记成 `link:` 依赖，仓库目录就是插件的实体，别删别挪。要验证装没装对，看配置树里有没有这个条目：
+
+```
+dsh --profile web --dump-config
 ```
 
 改动后按改动位置区分生效方式：

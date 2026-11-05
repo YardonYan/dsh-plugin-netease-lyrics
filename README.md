@@ -10,57 +10,83 @@
   <img src="docs/cover-hero.svg" width="100%" alt="把歌词藏进 DSH 状态行">
 </p>
 
-<table>
-<tr>
-<td width="55%" valign="top">
+## 快速开始
 
-## 安装
+三个前提，缺一条就跑不起来：
 
-**环境要求**
+| 前提 | 说明 |
+| --- | --- |
+| DSH，Windows 10 / 11 宿主 | `dsh` 要在 PATH 上，终端里敲 `dsh -V` 有版本号返回 |
+| 桌面版网易云音乐 | **设置 → 常规 → 系统 → 勾选「开启SMTC」**。不开的话系统层面读不到播放状态，插件拿不到任何数据 |
+| pnpm | `dsh plugin` 自己不装包，它把参数转发给 pnpm 执行。找不到 pnpm 时会以 `dsh: pnpm was not found` 退出 |
 
-- DeepSeek Harness，Windows 10 / 11 宿主
-- 桌面版网易云音乐，且在 **设置 → 常规 → 系统** 勾选「**开启SMTC**」。不开的话 SMTC 读不到播放状态，这是最容易踩的坑（开关位置截图见下文"前置开关"）
+### 第一步：装插件
 
-**在 DSH 会话里装（推荐）**
-
-把下面整段发给 DSH 的会话，让它替你装：
-
-```text
-帮我装一个 DSH 插件：
-https://github.com/YardonYan/dsh-plugin-netease-lyrics
-
-克隆到本地任意目录，执行：
-dsh plugin --profile web add "<克隆路径>" --save-exact
-装进 web profile，然后重启 dsh web、刷新页面。
-装完告诉我装到哪个目录、有没有加载报错；
-有报错就贴原文，不要改代码绕过。
-```
-
-**或者手动装**
+一条命令，不用克隆仓库：
 
 ```powershell
-dsh plugin --profile web add "<克隆路径>/dsh-plugin-netease-lyrics" --save-exact
+dsh plugin --profile web add github:YardonYan/dsh-plugin-netease-lyrics
 ```
 
-装完重启 `dsh web`（Host 端需要加载进程），刷新页面。
+这条命令做两件事：把仓库当 npm 包装进 web profile 的依赖，并在同一份 `package.json` 的 `dsh.profile.bundles` 里登记。装完**重启 `dsh web`**（Host 进程要在启动时加载新插件），再刷新页面。
 
-</td>
-<td width="45%" valign="top">
+### 第二步：确认真的装上了
 
-## 一起共创
+```powershell
+dsh --profile web --dump-config
+```
 
-仓库已经开源，缺陷、适配、新功能都欢迎直接提。还没想清方案的，先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 聊，定了再写代码也不迟。
+输出里应当出现这样一段：
 
-最值得做的两件事：
+```yaml
+# == dsh-plugin-netease-lyrics
+- id: netease-lyrics
+  name: dsh-plugin-netease-lyrics
+  config: {}
+```
 
-- **适配其他系统**：把 `smtc-worker.ps1` 换成对应系统的取数方式，宿主端与浏览器端基本不用动
-- **适配其他音乐平台**：`smtc-worker.ps1` 目前按 `*cloudmusic*` 过滤会话，放开匹配就能拿到别的播放器，剩下要补的是歌词源
+**没有这一段就是没装上。** 这点必须单独确认：`add` 返回 0 不代表装对了，包名或路径指错时 pnpm 可能装进一个空壳依赖然后正常退出。
 
-换歌词源、修歌词匹配、调界面细节、补截图与文档同样欢迎，流程与代码约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+### 第三步：让它转起来
 
-</td>
-</tr>
-</table>
+打开桌面网易云放一首歌，在 DSH 里随便发一条消息。状态行出现时，歌词就贴在它右边。
+
+## 让 AI 替你装
+
+DSH 会话里的 AI 能执行终端命令的话，把下面整段贴进去。这段提示词的关键在于**装完必须自证**，不靠「命令没报错」下结论：
+
+```text
+帮我装一个 DSH 插件，装完自己验证一遍，不要改代码绕过问题。
+
+仓库：https://github.com/YardonYan/dsh-plugin-netease-lyrics
+
+按顺序做三步，每步的原始输出都留着：
+1. 装：dsh plugin --profile web add github:YardonYan/dsh-plugin-netease-lyrics
+2. 验：dsh --profile web --dump-config
+   输出里应有 id: netease-lyrics 那一段，把它原文贴给我
+3. 报：命令退出码、dump-config 里有没有 netease-lyrics、pnpm -v 的结果
+
+任何一步失败，把完整报错原文贴给我，不要换安装方式硬试，也不要改插件代码。
+最后提醒我两件事：重启 dsh web 并刷新页面；去网易云「设置 → 常规 → 系统」勾上「开启SMTC」。
+```
+
+为什么非要写第二步：`dsh plugin add` 把参数转发给 pnpm，而 pnpm 遇到「目录里没有 package.json」不一定报错，可能装成一个空壳依赖再正常退出。所以判断装没装对，看的是配置树里有没有这个条目。
+
+如果你的 DSH 会话没有执行命令的权限，直接手动把第一步、第二步的命令复制到 PowerShell 里跑一遍即可。
+
+### 想改代码：本地克隆方式
+
+要调试或改插件本身，克隆下来装成本地链接：
+
+```powershell
+$dir = "$env:USERPROFILE\dsh-plugins\dsh-plugin-netease-lyrics"
+git clone https://github.com/YardonYan/dsh-plugin-netease-lyrics.git $dir
+dsh plugin --profile web add $dir
+```
+
+本地目录会被 pnpm 记成 `link:` 依赖，克隆目录就是插件的实体：删了、挪了、换盘符了，插件立刻失效。别放临时目录或下载目录。
+
+改完源码不用重装：`index.js` 改动后重启 `dsh web`，只改 `client.js` 刷新页面即可。
 
 ## 使用
 
@@ -69,7 +95,7 @@ dsh plugin --profile web add "<克隆路径>/dsh-plugin-netease-lyrics" --save-e
 3. 「深度求索中」状态行右边会出现同样式的歌词，跟着演唱进度换行
 4. 鼠标悬停歌词可看完整句和翻译（如果有）；浮层不拦截点击，下方控件照常可用
 
-歌词语言不用挑——中文、英文、韩文、日文都能出，只要这首歌在网易云有词。插件按歌曲搜索拿原始 LRC，原文是什么语言就显示什么语言，带官方翻译的歌还会在悬停时给翻译：
+歌词语言不用挑——中文、英文、韩文、日文都能出，只要这首歌在网易云有词。插件按歌曲搜索拿原始 LRC，原文是什么语言就显示什么语言，带官方翻译的歌还会在悬停时给翻译。
 
 ## 效果预览
 
@@ -134,31 +160,6 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
 - 歌词检索走网易云的公开接口，换音乐平台就得另接歌词源，还要按对方的曲目 ID 体系重写匹配逻辑
 - 播放状态与歌词源必须成对替换，只换一边跑不起来
 
-## 必读：注意事项与已知限制
-
-### 前置开关（不开就一定用不了）
-
-网易云桌面版必须打开 **「开启SMTC」** 开关，否则 Windows 系统层面根本看不到网易云在放什么，插件拿不到任何数据：
-
-> 网易云音乐 → **设置 → 常规 → 系统 → 勾选「开启SMTC」**（开启后播放信息同步到系统菜单栏及壁纸等第三方软件），勾完切一次歌生效。
-
-![网易云 SMTC 开关位置](docs/smtc-setting.png)
-
-这个开关也是排查「歌词不显示」的第一检查项。
-
-| 限制 | 原因 | 缓解办法 |
-| --- | --- | --- |
-| **歌词不显示的第一排查项** | 网易云没开「开启SMTC」开关（设置 → 常规 → 系统） | 勾选后切一次歌生效，见上方截图 |
-| 拖动网易云进度条后歌词漂移 | SMTC 不上报 seek，秒表感知不到 | 换一首歌再换回来，即重新对齐 |
-| 单曲循环时秒表会走出歌尾 | 秒表不知道歌曲总长 | 同上 |
-| 仅适配中文界面 | 锚点匹配「深度求索中，用时」文案 | 在插件配置里改 `anchorText`（见下） |
-| AI 空闲时歌词不显示 | 设计行为：状态行不在 = 歌词隐藏（隐蔽优先） | 想常显需自行改 client.js 的 stealth 判断 |
-| 仅本机访问 | 路由只响应 loopback + Origin 校验 | 这是安全特性，不开放外露 |
-| 歌词取不到 | 两种原因：曲目在网易云没有版权（例如周杰伦的作品整库不在），或搜索命中的候选曲目本身没有歌词 | 无版权时插件无能为力；候选无歌词时当前只试第一条、不会继续试后面的候选 |
-| **歌词长时间（小时级）空白** | 网易云公开搜索接口的 IP 限流（响应 `code: 405 操作频繁`），窗口实测可达一小时以上 | **1.0.5 起自动处理，无需操作**：插件会切换到限流计数独立的备用搜索端点，歌词最坏延迟到下一首换歌时。旧版本（≤1.0.4）遇到限流会把空结果缓存一周，请升级 |
-
-上表里与进度有关的两条（拖动进度条后漂移、单曲循环走出歌尾）是同一个成因：网易云不通过 SMTC 上报播放位置，插件只能自己跑秒表推。这个缺口的成因、四条可选路径（系统时间轴 / UI Automation / 登录态 API / 音频指纹）与改动草案写在 [docs/playback-position.md](docs/playback-position.md)。
-
 ## 配置
 
 在 profile 的 `cordis.patch.yml` 顶层数组里追加一条按 id 命中的补丁。不要写成 `insert`，那会新增一行插件，而不是改这一行：
@@ -179,9 +180,81 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
 
 文案本身要选状态行里稳定出现的一小段。太短容易误匹配聊天正文，太长在状态行拆分文本节点时会匹配不到。
 
+## 更新与卸载
+
+```powershell
+# 更新到仓库最新提交
+dsh plugin --profile web update dsh-plugin-netease-lyrics
+
+# 卸载
+dsh plugin --profile web remove dsh-plugin-netease-lyrics
+```
+
+两条都要重启 `dsh web` 生效。想确认当前实际在用哪个版本：
+
+```powershell
+dsh plugin --profile web why dsh-plugin-netease-lyrics
+```
+
+改动记录见 [CHANGELOG.md](CHANGELOG.md)，逐版说明在 [Releases](https://github.com/YardonYan/dsh-plugin-netease-lyrics/releases)。
+
+## 必读：注意事项与已知限制
+
+### 前置开关（不开就一定用不了）
+
+网易云桌面版必须打开 **「开启SMTC」** 开关，否则 Windows 系统层面根本看不到网易云在放什么，插件拿不到任何数据：
+
+> 网易云音乐 → **设置 → 常规 → 系统 → 勾选「开启SMTC」**（开启后播放信息同步到系统菜单栏及壁纸等第三方软件），勾完切一次歌生效。
+
+![网易云 SMTC 开关位置](docs/smtc-setting.png)
+
+这个开关也是排查「歌词不显示」的第一检查项。
+
+### 已知限制
+
+| 限制 | 原因 | 缓解办法 |
+| --- | --- | --- |
+| **歌词不显示的第一排查项** | 网易云没开「开启SMTC」开关（设置 → 常规 → 系统） | 勾选后切一次歌生效，见上方截图 |
+| 拖动网易云进度条后歌词漂移 | SMTC 不上报 seek，秒表感知不到 | 换一首歌再换回来，即重新对齐 |
+| 单曲循环时秒表会走出歌尾 | 秒表不知道歌曲总长 | 同上 |
+| 仅适配中文界面 | 锚点匹配「深度求索中，用时」文案 | 在插件配置里改 `anchorText`（见上） |
+| AI 空闲时歌词不显示 | 设计行为：状态行不在 = 歌词隐藏（隐蔽优先） | 想常显需自行改 client.js 的 stealth 判断 |
+| 仅本机访问 | 路由只响应 loopback + Origin 校验 | 这是安全特性，不开放外露 |
+| 歌词取不到 | 两种原因：曲目在网易云没有版权（例如周杰伦的作品整库不在），或搜索命中的候选曲目本身没有歌词 | 无版权时插件无能为力；候选无歌词时当前只试第一条、不会继续试后面的候选 |
+| **歌词长时间（小时级）空白** | 网易云公开搜索接口的 IP 限流（响应 `code: 405 操作频繁`），窗口实测可达一小时以上 | **1.0.5 起自动处理，无需操作**：插件会切换到限流计数独立的备用搜索端点，歌词最坏延迟到下一首换歌时。旧版本（≤1.0.4）遇到限流会把空结果缓存一周，请升级 |
+
+上表里与进度有关的两条（拖动进度条后漂移、单曲循环走出歌尾）是同一个成因：网易云不通过 SMTC 上报播放位置，插件只能自己跑秒表推。这个缺口的成因、四条可选路径（系统时间轴 / UI Automation / 登录态 API / 音频指纹）与改动草案写在 [docs/playback-position.md](docs/playback-position.md)。
+
+## 排障速查
+
+先分清是装的问题，还是跑的问题。`--dump-config` 里有 `netease-lyrics` 条目，说明装好了，剩下的都属运行侧。
+
+**安装阶段**
+
+| 现象 | 原因与处理 |
+| --- | --- |
+| `dsh: pnpm was not found` | `dsh plugin` 依赖 PATH 上的 pnpm。装 pnpm（`npm i -g pnpm` 或 `corepack enable pnpm`）后重跑 |
+| 命令成功，但 `--dump-config` 里没有 `netease-lyrics` | 包名或路径指错。用 `dsh plugin --profile web why dsh-plugin-netease-lyrics` 看实际装进去的是什么，是空壳就 `remove` 掉重装 |
+| 下载卡住或超时 | 走的是 `codeload.github.com`，网络受限时会很慢。确认能访问后重试，或改用上面的本地克隆方式 |
+| `dsh` 不是可用的命令 | `dsh` 没进 PATH。检查 Node 的全局 bin 目录，或用 `npx @deepseek-ai/dsh ...` 调用 |
+
+**运行阶段**
+
+**歌词完全不出现？**
+
+1. 网易云在放吗？→ 放着才有效
+2. 网易云「开启SMTC」开关开了吗？→ 设置 → 常规 → 系统（见"前置开关"截图）
+3. AI 在转吗（「深度求索中」行存在）？→ 空闲时按设计隐藏
+4. 浏览器 F12 控制台有没有 `[netease-lyrics]` 警告？→ worker 挂了会在这里提示
+5. 歌在放、前面都对，还是没有？→ 去网页版网易云搜同一首歌，确认它是否被收录、有没有歌词。整库没有版权的歌手（例如周杰伦）插件取不到，这不是插件能解决的
+
+**歌词突然卡住不走？** 网易云被暂停又恢复过、或拖动过进度条 → 切一首歌再切回来。
+
+**颜色/位置不对？** 歌词样式是从状态行现场克隆的，若 DSH 更新改了状态行实现，重新刷新页面即可。
+
 ## 隐私与安全
 
-- 插件不读取网易云账号、Cookie 或任何客户端数据，只读 Windows 系统媒体会话的公开快照（歌名/歌手/状态）
+- 插件不读取网易云账号、Cookie 或任何客户端数据，只读 Windows 系统媒体会话的公开快照（歌名 / 歌手 / 状态）
 - 歌词经 `music.163.com` 公开接口按歌名搜索，无需登录
 - HTTP 路由仅接受本机回环地址，带 Origin 校验，防 DNS rebinding
 
@@ -207,22 +280,18 @@ dsh-plugin-netease-lyrics/
 └── icon.svg              # 插件图标
 ```
 
-## 排障速查
+## 一起共创
 
-**歌词完全不出现？**
-1. 网易云在放吗？→ 放着才有效
-2. 网易云「开启SMTC」开关开了吗？→ 设置 → 常规 → 系统（见"前置开关"截图）
-3. AI 在转吗（「深度求索中」行存在）？→ 空闲时按设计隐藏
-4. 浏览器 F12 控制台有没有 `[netease-lyrics]` 警告？→ worker 挂了会在这里提示
-5. 歌在放、前面都对，还是没有？→ 去网页版网易云搜同一首歌，确认它是否被收录、有没有歌词。整库没有版权的歌手（例如周杰伦）插件取不到，这不是插件能解决的
+仓库已经开源，缺陷、适配、新功能都欢迎直接提。还没想清方案的，先到 [Discussions](https://github.com/YardonYan/dsh-plugin-netease-lyrics/discussions) 聊，定了再写代码也不迟。
 
-**歌词突然卡住不走？**
-网易云被暂停又恢复过、或拖动过进度条 → 切一首歌再切回来。
+最值得做的两件事：
 
-**颜色/位置不对？**
-歌词样式是从状态行现场克隆的，若 DSH 更新改了状态行实现，重新刷新页面即可。
+- **适配其他系统**：把 `smtc-worker.ps1` 换成对应系统的取数方式，宿主端与浏览器端基本不用动
+- **适配其他音乐平台**：`smtc-worker.ps1` 目前按 `*cloudmusic*` 过滤会话，放开匹配就能拿到别的播放器，剩下要补的是歌词源
 
-## 开发与贡献
+换歌词源、修歌词匹配、调界面细节、补截图与文档同样欢迎，流程与代码约定见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+### 提交前自检
 
 环境准备、本地生效方式、代码约定与提交规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。只想先跑一遍语法自检：
 

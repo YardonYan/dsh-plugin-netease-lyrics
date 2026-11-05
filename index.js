@@ -185,9 +185,10 @@ async function searchSong(title, artist) {
       }
       const id = parseSearchBody(body, title);
       if (id !== null) return id;
-      if (lastSearchBlocked) continue; // rate-limited on this endpoint: try the next
-      // A clean "no results" answer: no point trying other endpoints.
-      return null;
+      // Either rate-limited or an opaque/soft-blocked response (163 sometimes
+      // answers with a garbage hash in place of result.songs). Either way the
+      // endpoint is unusable: try the next one before giving up.
+      continue;
     } catch {
       /* network error on this endpoint: try the next */
     } finally {

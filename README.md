@@ -138,20 +138,21 @@ DSH 里的样子——歌词贴在「深度求索中」右边，一模一样的�
 | 仅适配中文界面 | 锚点匹配「深度求索中，用时」文案 | 在插件配置里改 `anchorText`（见下） |
 | AI 空闲时歌词不显示 | 设计行为：状态行不在 = 歌词隐藏（隐蔽优先） | 想常显需自行改 client.js 的 stealth 判断 |
 | 仅本机访问 | 路由只响应 loopback + Origin 校验 | 这是安全特性，不开放外露 |
-| 歌词搜索偶尔对不上歌 | 按「歌名 + 歌手」搜索取首个精确匹配 | 少见；纯音乐/翻唱版本多时可能取错 |
+| 歌词搜到同名翻唱导致不显示 | 搜索用「歌名 + 歌手」，但结果只比对歌名、不校验歌手，同名翻唱或付费曲目可能排在前面 | 主流歌也会中招（例如「晴天」会先匹配到同名翻唱）；换一首或等后续按歌手加权匹配 |
 
 上表里与进度有关的两条（拖动进度条后漂移、单曲循环走出歌尾）是同一个成因：网易云不通过 SMTC 上报播放位置，插件只能自己跑秒表推。这个缺口的成因、四条可选路径（系统时间轴 / UI Automation / 登录态 API / 音频指纹）与改动草案写在 [docs/playback-position.md](docs/playback-position.md)。
 
 ## 配置
 
-在 profile 的 `cordis.patch.yml` 中覆盖该插件行：
+在 profile 的 `cordis.patch.yml` 顶层数组里追加一条按 id 命中的补丁。不要写成 `insert`，那会新增一行插件，而不是改这一行：
 
 ```yaml
-- override:
-    id: netease-lyrics
-    config:
-      anchorText: "深度求索中，用时"   # 换成你的宿主状态行文案（英文界面等）
+- id: netease-lyrics
+  config:
+    anchorText: "深度求索中，用时"   # 换成你的宿主状态行文案（英文界面等）
 ```
+
+同目录下的其他插件都用这个形式，宿主按 id 找到已加载的那一行并合并 config。改完这条配置会作为第二个参数传进插件的 apply，1.0.2 起只认这条通道，不再去上下文里取。
 
 关于 `anchorText` 的三点：
 
@@ -178,6 +179,8 @@ dsh-plugin-netease-lyrics/
 ├── smtc-worker.ps1       # Windows SMTC 探测 worker（ASCII-only，PS 5.1 兼容）
 ├── scripts/
 │   └── smtc-probe.ps1    # 单独验证 SMTC 能否读到网易云会话与时间轴
+├── test/
+│   └── apply-guard.test.mjs  # 客户端挂载回归测试（npm test）
 ├── docs/                 # 效果截图与方案文档
 ├── locale/               # 展示名称与描述（en / zh）
 ├── .github/              # Issue 与 Pull Request 模板

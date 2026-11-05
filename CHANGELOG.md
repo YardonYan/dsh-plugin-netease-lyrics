@@ -2,6 +2,18 @@
 
 本项目的所有重要变更都记录在此文件。格式参考 Keep a Changelog，版本号遵循语义化版本。
 
+## 1.0.3 - 2026-11-05
+
+### 修复
+
+- 定位到 1.0.2 仍偶发宿主无法启动的残留根因：1.0.2 只加固了 client.js，Host 端 index.js 仍在裸访问宿主上下文 —— `ctx.get("webServer")`、`ctx.logger?.warn?()`、`ctx.effect(...)` 共三处。宿主内核在启动早期对未注册属性的代理访问会直接抛异常（`?.` 可选链只防 undefined，不防"访问动作本身被 proxy get trap 抛出"），异常导致插件 fiber 进入 failed，宿主随即拒绝启动整个 web 端（现象：`crash-*-web-boot.log` 记录 `web boot: 1 entry did not activate`）
+- Host 端 apply 现在与 1.0.2 的 client.js 同等强度：整体 try/catch 兜底（激活永不向外抛异常）；所有 ctx 访问经 safeGet/safeEffect 防御助手（属性访问抛异常时返回降级值）；日志改用 console，不再触碰 ctx.logger；effect 注册失败时回退直接挂载，最坏情况只是歌词路由不可用
+- 新增两份防护验证：开源仓库 test/apply-guard.test.mjs 9 项全过；另模拟"完全中毒上下文（任何属性访问都抛）"与"effect 注册抛异常"两种宿主，apply 均不向外抛异常
+
+### 升级说明
+
+从 1.0.0-1.0.2 升级的用户请务必更新后重启 DSH。此前版本在宿主启动时序不利时会让 web 端无法启动，1.0.3 的最坏退化路径是"歌词不显示"，宿主永远可以启动。
+
 ## 1.0.2 - 2026-11-05
 
 ### 修复

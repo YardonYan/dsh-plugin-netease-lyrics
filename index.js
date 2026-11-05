@@ -1,5 +1,5 @@
 /**
- * @local/netease-lyrics — Host half.
+ * dsh-plugin-netease-lyrics — Host half.
  *
  * Owns:
  *  - one supervised SMTC worker process (powershell -File smtc-worker.ps1)
@@ -11,6 +11,14 @@
  * The browser half polls `state` (1s) and fetches `lyrics` only when the song
  * changes. Progress is a host-side stopwatch because the Netease PC client
  * does not expose its playback position through SMTC.
+ *
+ * CRITICAL ACTIVATION CONTRACT (regression 1.0.0-1.0.2): the host context is
+ * a proxy whose property access can THROW during early web boot. Any bare
+ * `ctx.get(...)`, `ctx.logger...` or `ctx.effect(...)` outside a try block
+ * fails this plugin's fiber, and the host then refuses to boot the whole web
+ * app ("web boot: 1 entry did not activate"). Every ctx touch below goes
+ * through the guarded helpers and the whole apply body is wrapped: the worst
+ * case is a silent plugin, never a dead host.
  */
 import { spawn } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -20,6 +28,41 @@ export const inject = ["webServer"];
 
 const ROUTE_PREFIX = "/plugin/netease-lyrics";
 const LYRIC_CACHE_MAX = 30;
+
+function log(...parts) {
+  try {
+    console.warn("[netease-lyrics]", ...parts);
+  } catch {
+    /* logging must never throw */
+  }
+}
+
+/**
+ * Read one property off the host context without ever throwing. Returns
+ * fallback when the context is poisoned (early boot proxy) or the service
+ * is absent.
+ */
+function safeGet(ctx, key, fallback) {
+  try {
+    const value = ctx.get(key);
+    return value === undefined || value === null ? fallback : value;
+  } catch {
+    return fallback;
+  }
+}
+
+/** Register one effect; returns a disposer or null. Never throws. */
+function safeEffect(ctx, register, label) {
+  try {
+    if (typeof ctx.effect === "function") {
+      ctx.effect(register, label);
+      return true;
+    }
+  } catch (error) {
+    log(`effect registration failed (${label}), degrading to direct call:`, error?.message ?? error);
+  }
+  return null;
+}
 
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
@@ -120,6 +163,16 @@ async function searchSong(title, artist) {
 }
 
 export function apply(ctx, config = {}) {
+  try {
+    applyInner(ctx, config);
+  } catch (error) {
+    // The absolute last resort: activation must never throw, or the host
+    // refuses to boot the web app entirely (regression 1.0.0-1.0.2).
+    log("activation degraded to idle after unexpected error:", error?.message ?? error);
+  }
+}
+
+function applyInner(ctx, config = {}) {
   // SMTC is a Windows-only API. On other platforms keep the web routes alive
   // but report supported:false so the browser half stays silent instead of
   // crash-looping a nonexistent powershell.exe.
@@ -207,8 +260,8 @@ export function apply(ctx, config = {}) {
       const quickDeath = Date.now() - state.workerStartedAt < 60000;
       state.workerRestarts += 1;
       if (!state.disposed) {
-        ctx.logger?.warn?.(
-          `netease-lyrics: SMTC worker exited (restart #${state.workerRestarts}${quickDeath ? ", quick death" : ""}); ` +
+        log(
+          `SMTC worker exited (restart #${state.workerRestarts}${quickDeath ? ", quick death" : ""}); ` +
           (state.workerErr ? `last stderr: ${state.workerErr.slice(-300)}` : "no stderr captured"),
         );
         setTimeout(ensureWorker, quickDeath ? 15000 : 3000);
@@ -224,7 +277,7 @@ export function apply(ctx, config = {}) {
   if (state.supported) {
     ensureWorker();
   } else {
-    ctx.logger?.warn?.("netease-lyrics: SMTC is Windows-only; plugin stays idle on this platform");
+    log("SMTC is Windows-only; plugin stays idle on this platform");
   }
 
   async function ensureLyrics(title, artist) {
@@ -253,15 +306,14 @@ export function apply(ctx, config = {}) {
     return task;
   }
 
-  const webServer = ctx.get("webServer");
-  if (webServer === undefined) {
-    ctx.logger?.warn?.("netease-lyrics: webServer unavailable, browser half disabled");
+  const webServer = safeGet(ctx, "webServer", null);
+  if (!webServer || typeof webServer.register !== "function") {
+    log("webServer unavailable, browser half disabled");
     return;
   }
 
-  ctx.effect(
-    () =>
-      webServer.register({
+  function routeFactory() {
+    return webServer.register({
         kind: "prefix",
         path: ROUTE_PREFIX,
         handler: async (req, res) => {
@@ -327,11 +379,26 @@ export function apply(ctx, config = {}) {
             return sendJson(res, 500, { ok: false, message: String(error?.message ?? error) });
           }
         },
-      }),
-    "netease-lyrics: web routes",
-  );
+      });
+  }
 
-  ctx.effect(
+  let routeRegistered = null;
+  try {
+    routeRegistered = safeEffect(ctx, routeFactory, "netease-lyrics: web routes");
+  } catch (error) {
+    log("effect route registration threw:", error?.message ?? error);
+  }
+  if (routeRegistered === null) {
+    // No effect system available: register directly so the routes still work.
+    try {
+      routeFactory();
+    } catch (error) {
+      log("direct route registration failed:", error?.message ?? error);
+    }
+  }
+
+  safeEffect(
+    ctx,
     () => () => {
       state.disposed = true;
       if (state.worker !== null) {

@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Netease Lyrics",
-    "description": "Shows the lyrics of the song playing in the desktop Netease Cloud Music app above the composer."
+    "description": "Shows the playing Netease Cloud Music lyric line at the end of the activity line above the composer."
   }
 }

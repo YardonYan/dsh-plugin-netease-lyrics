@@ -112,7 +112,7 @@ window.__ModuleLoader__.load({
         position: 0, rows: [], syncedAt: 0, supported: true, workerAlive: true,
       });
       const [now, setNow] = React.useState(() => Date.now());
-      const [anchor, setAnchor] = React.useState(null);
+      const [anchorEl, setAnchorEl] = React.useState(null);
       const songRef = React.useRef('');
       const localBaseRef = React.useRef({ base: 0, at: Date.now(), playing: false });
       const anchorRef = React.useRef(null);
@@ -180,67 +180,23 @@ window.__ModuleLoader__.load({
         return () => { disposed = true; clearInterval(timer); };
       }, []);
 
-      // Locate the activity line and copy its typography on every tick.
-      // Coordinates are viewport-relative (fixed positioning against body),
-      // so no self-DOM is needed — the lyric can render even before its own
-      // wrapper exists, which breaks the previous null-ref deadlock.
+      // Locate the activity line and keep a live reference to it. Instead of
+      // positioning a floating span with viewport coordinates (position:fixed
+      // breaks when any ancestor gains a CSS transform — exactly what a host
+      // UI update did), the lyric span is physically appended next to the
+      // anchor element, so it inherits layout, scroll and transforms for free.
       React.useLayoutEffect(() => {
         const anchorEl = findAnchorRef.current(anchorRef);
-        if (!anchorEl) {
-          setAnchor((prev) => (prev === null ? prev : null));
-          return;
-        }
-        // Measure the anchor's REAL text end (not the container edge): walk
-        // its text nodes with a Range and keep the rightmost caret rect.
-        const walker = document.createTreeWalker(anchorEl, NodeFilter.SHOW_TEXT, null);
-        let textNode;
-        let textRight = -Infinity;
-        let lastRect = null;
-        while ((textNode = walker.nextNode())) {
-          const range = document.createRange();
-          range.selectNodeContents(textNode);
-          const rects = range.getClientRects();
-          for (const r of rects) {
-            if (r.width > 0) {
-              if (r.right > textRight) textRight = r.right;
-              lastRect = r;
-            }
-          }
-        }
-        const ar = anchorEl.getBoundingClientRect();
-        if (textRight === -Infinity) textRight = ar.right;
-        if (ar.width === 0) {
-          setAnchor((prev) => (prev === null ? prev : null));
-          return;
-        }
-        const cs = getComputedStyle(anchorEl);
-        const gap = 8;
-        const next = {
-          left: textRight + gap,
-          top: lastRect ? lastRect.top : ar.top,
-          height: lastRect ? lastRect.height : ar.height,
-          maxWidth: Math.max(window.innerWidth - textRight - 24, 80),
-          fontFamily: cs.fontFamily,
-          fontSize: cs.fontSize,
-          fontWeight: cs.fontWeight,
-          lineHeight: cs.lineHeight,
-          color: cs.color,
-          letterSpacing: cs.letterSpacing,
-        };
-        setAnchor((prev) => {
-          if (prev && Math.abs(prev.left - next.left) < 1 && Math.abs(prev.top - next.top) < 1
-            && prev.fontSize === next.fontSize && prev.color === next.color) return prev;
-          return next;
-        });
+        setAnchorEl((prev) => (prev === anchorEl ? prev : anchorEl));
       }, [now, state]);
 
-      // Hover detection without hit-testing: the lyric overlay deliberately
+      // Hover detection without hit-testing: the lyric span deliberately
       // keeps `pointer-events: none` so it can never steal clicks from the
       // composer — which also means the native `title` tooltip never fires.
       // Compare the cursor against the rendered rect instead, so the full
       // line and its translation stay reachable without becoming clickable.
       React.useEffect(() => {
-        if (!anchor) {
+        if (!anchorEl) {
           setHovering((prev) => (prev ? false : prev));
           return undefined;
         }
@@ -262,7 +218,7 @@ window.__ModuleLoader__.load({
           document.removeEventListener('mousemove', onMove);
           if (frame !== 0) window.cancelAnimationFrame(frame);
         };
-      }, [anchor]);
+      }, [anchorEl]);
 
       const { rows, hasSong } = state;
       const base = localBaseRef.current;
@@ -278,63 +234,81 @@ window.__ModuleLoader__.load({
       if (!hasSong || !active || !active.text) return null;
       // Stealth mode: only render while the activity line exists. Without it,
       // visible lyrics would give the disguise away.
-      if (!anchor) return null;
+      if (!anchorEl) return null;
 
-      // Anchored mode: viewport-fixed span beside the activity line with
-      // identical typography. The wrapper itself stays zero-size so the dock
-      // slot keeps its layout.
+      // Inline mode: the lyric span is appended as a sibling of the anchor
+      // element inside the anchor's own parent, so it flows right after the
+      // status text and inherits scroll/transforms automatically — immune to
+      // host layout changes that broke position:fixed.
       const detail = active.trans ? `${active.text}\n${active.trans}` : active.text;
-      const tipWidth = 320;
-      const tipLeft = Math.max(8, Math.min(anchor.left, window.innerWidth - tipWidth - 16));
-      return h('div', { style: { height: 0 } },
-          h('span', {
-            ref: spanRef,
-            style: {
-              position: 'fixed',
-              left: anchor.left,
-              top: anchor.top,
-              height: anchor.height,
-              maxWidth: anchor.maxWidth,
-              display: 'inline-flex',
-              alignItems: 'center',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              pointerEvents: 'none',
-              userSelect: 'none',
-              fontFamily: anchor.fontFamily,
-              fontSize: anchor.fontSize,
-              fontWeight: anchor.fontWeight,
-              lineHeight: anchor.lineHeight,
-              color: anchor.color,
-              letterSpacing: anchor.letterSpacing,
-            },
-          }, active.text),
-          hovering
-            ? h('div', {
-                style: {
-                  position: 'fixed',
-                  left: tipLeft,
-                  top: Math.max(anchor.top - 34, 8),
-                  maxWidth: tipWidth,
-                  padding: '6px 10px',
-                  borderRadius: 6,
-                  background: 'rgba(23, 23, 26, 0.95)',
-                  color: '#ffffff',
-                  fontFamily: anchor.fontFamily,
-                  fontSize: '12px',
-                  fontWeight: 400,
-                  lineHeight: '18px',
-                  letterSpacing: 0,
-                  whiteSpace: 'pre-line',
-                  pointerEvents: 'none',
-                  userSelect: 'none',
-                  zIndex: 2147483647,
-                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.28)',
-                },
-              }, detail)
-            : null,
-      );
+      return h(InlineLyric, {
+        anchorEl,
+        text: active.text,
+        detail,
+        spanRef,
+        onHoverChange: setHovering,
+      });
+    }
+
+    /**
+     * Renders nothing through React's tree; instead portals the lyric span
+     * physically next to the anchor element via a manual DOM insertion.
+     * React still owns lifecycle and cleanup: on unmount the span is removed.
+     */
+    function InlineLyric({ anchorEl, text, detail, spanRef, onHoverChange }) {
+      const hostRef = React.useRef(null);
+      const mountRef = React.useRef(null);
+      if (mountRef.current === null) {
+        const span = document.createElement('span');
+        span.setAttribute('data-netease-lyrics', '1');
+        span.style.whiteSpace = 'nowrap';
+        span.style.overflow = 'hidden';
+        span.style.textOverflow = 'ellipsis';
+        span.style.maxWidth = '60vw';
+        span.style.verticalAlign = 'middle';
+        span.style.pointerEvents = 'none';
+        span.style.userSelect = 'none';
+        span.style.marginLeft = '10px';
+        span.style.display = 'inline-block';
+        span.textContent = text;
+        mountRef.current = span;
+      }
+      const span = mountRef.current;
+
+      // (Re)attach next to the current anchor and copy its typography.
+      React.useLayoutEffect(() => {
+        const node = span;
+        const parent = anchorEl.parentElement;
+        if (!parent) return;
+        // Clean typography from the anchor element itself.
+        const cs = getComputedStyle(anchorEl);
+        node.style.fontFamily = cs.fontFamily;
+        node.style.fontSize = cs.fontSize;
+        node.style.fontWeight = cs.fontWeight;
+        node.style.lineHeight = cs.lineHeight;
+        node.style.color = cs.color;
+        node.style.letterSpacing = cs.letterSpacing;
+        node.style.verticalAlign = cs.verticalAlign === 'baseline' ? 'middle' : cs.verticalAlign;
+        if (node.parentElement !== parent) {
+          parent.insertBefore(node, anchorEl.nextSibling);
+        } else if (node.previousSibling !== anchorEl && node.nextSibling !== anchorEl) {
+          parent.insertBefore(node, anchorEl.nextSibling);
+        }
+        spanRef.current = node;
+        return () => {
+          if (node.parentElement) node.parentElement.removeChild(node);
+          spanRef.current = null;
+        };
+      }, [anchorEl]);
+
+      // Keep the text current when the lyric line changes.
+      React.useEffect(() => {
+        if (span.textContent !== text) span.textContent = text;
+        span.title = detail;
+      }, [text, detail]);
+
+      // No DOM to render — everything happens in the imperative layer above.
+      return null;
     }
 
     return {

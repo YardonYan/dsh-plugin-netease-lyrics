@@ -88,6 +88,35 @@ dsh plugin --profile web add $dir
 
 改完源码不用重装：`index.js` 改动后重启 `dsh web`，只改 `client.js` 刷新页面即可。
 
+## 更新：一次提示词，不用重新下载
+
+**这个插件需要跟着宿主与网易云的更新走。** DSH 改 UI、网易云改客户端，都可能让某个版本的插件部分失灵——本仓库的修复记录全是这类跟进（定位方式、限流对策、激活防护，见 [CHANGELOG.md](CHANGELOG.md)）。所以**强烈建议用上面的"本地克隆方式"安装**：克隆目录就是插件实体，更新 = 拉取增量，不用每次整套重下。
+
+装好之后，把下面这段存好。**插件哪天失灵了，把它整段发给 DSH 会话**，AI 会自动完成"拉新版 → 判断是否需要重启 → 告诉你结论"：
+
+```text
+我装的 DSH 插件 dsh-plugin-netease-lyrics 最近可能因为 DSH 或网易云音乐更新而失灵了。
+插件装在本地克隆目录里（默认 %USERPROFILE%\dsh-plugins\dsh-plugin-netease-lyrics，
+如果你知道实际路径就直接用它）。
+
+请按顺序做，每步原始输出都留着：
+1. 进该目录执行 git pull --ff-only，把最新代码拉下来；告诉我更新到了哪个版本
+   （看 package.json 的 version 字段）。
+2. 对照仓库 CHANGELOG.md 里比我旧版本新的条目，判断这次更新改了什么：
+   - 只改了 client.js → 告诉我刷新浏览器页面即可；
+   - 改了 index.js 或 smtc-worker.ps1 → 提醒我重启 dsh web；
+   - 改了安装清单（package.json / cordis.patch.yml）→ 重新执行
+     dsh plugin --profile web add <克隆路径> 再重启。
+3. 如果 git pull 冲突或失败，把报错原文贴给我，不要强行 reset。
+
+拉完之后提醒我：对照 README 的"前置开关"和"排障速查"过一遍，再让 AI 转一轮
+验证歌词是否恢复；还没恢复就把 F12 控制台里 [netease-lyrics] 开头的告警贴出来。
+```
+
+**为什么不用 zip 下载安装**：zip 是整套快照，每次更新都得手动重下重装；clone 安装的更新只是网络增量，且上面的提示词能全自动完成。两种方式的取舍已经写进安装一节。
+
+**网络受限环境**：`git pull` 走 GitHub 可能遇到 SSL 握手抖动，重试一两次通常就过；代理用户给 git 配上代理端口即可（例如 `git config --global http.proxy http://127.0.0.1:7897`）。
+
 ## 使用
 
 1. 打开桌面网易云放一首歌
@@ -196,7 +225,7 @@ dsh plugin --profile web remove dsh-plugin-netease-lyrics
 dsh plugin --profile web why dsh-plugin-netease-lyrics
 ```
 
-改动记录见 [CHANGELOG.md](CHANGELOG.md)，逐版说明在 [Releases](https://github.com/YardonYan/dsh-plugin-netease-lyrics/releases)。
+改动记录见 [CHANGELOG.md](CHANGELOG.md)，逐版说明在 [Releases](https://github.com/YardonYan/dsh-plugin-netease-lyrics/releases)。上面的 [更新：一次提示词](#更新一次提示词不用重新下载) 一节有一条 AI 全自动更新提示词，适合插件失灵时直接整段发给 DSH 会话。
 
 ## 必读：注意事项与已知限制
 
